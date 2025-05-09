@@ -1,12 +1,13 @@
 // import { useState } from 'react'
 import './App.css'
 import {ConnectButton} from '@suiet/wallet-kit';
+import {useWallet} from '@suiet/wallet-kit';
+import {Transaction} from "@mysten/sui/transactions";
 
 function App() {
 
   return (
     <>
-    <div><h1>here </h1></div>
      <header>
         <ConnectButton/>
       </header>
