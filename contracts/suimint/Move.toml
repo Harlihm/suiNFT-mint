@@ -1,0 +1,9 @@
+[package]
+name = "suimint"
+version = "0.0.1"
+
+[dependencies]
+Sui = { local = "../../../sui/crates/sui-framework/packages/sui-framework" }
+
+[addresses]
+suimint = "0x0" 

@@ -14,14 +14,17 @@ function App() {
     console.log('connected wallet name: ', wallet.name)
     console.log('account address: ', wallet.account?.address)
     console.log('account publicKey: ', wallet.account?.publicKey)
-  }, [wallet.connected])
+  }, [wallet.connected, wallet.name, wallet.account?.address, wallet.account?.publicKey])
 
   async function handleMoveCall() {
     const tx = new Transaction();
-    const packageObjectId = "0x1";
+    // This will be replaced with your deployed package ID
+    const packageObjectId = "0x0";
     tx.moveCall({
       target: `${packageObjectId}::nft::mint`,
-      arguments: [tx.pure.string("Example NFT")],
+      arguments: [
+        tx.pure.u64(100000) // 0.0001 SUI in MIST
+      ],
     });
     await wallet.signAndExecuteTransaction({
       transaction: tx,
@@ -38,6 +41,8 @@ function App() {
     <>
      <header>
         <ConnectButton/>
+        <button onClick={handleMoveCall}>Mint NFT</button>
+        <button onClick={handleSignMessage}>Sign Message</button>
       </header>
     </>
   )
