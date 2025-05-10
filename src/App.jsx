@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 // cd contracts/suimint
 // sui move build
 
-//sui client publish --gas-budget 100000000
+//sui client publish --gas-budget tur
 
 function App() {
 
@@ -26,7 +26,7 @@ function App() {
   async function handleMoveCall() {
     const tx = new Transaction();
     // This will be replaced with your deployed package ID
-    const packageObjectId = "0x0";
+    const packageObjectId = "0x775edf434cd67e88b77ef86739d57e702a3c7576688e4276c67b62ba319393bc";
     tx.moveCall({
       target: `${packageObjectId}::nft::mint`,
       arguments: [
