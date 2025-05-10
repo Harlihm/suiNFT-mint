@@ -5,6 +5,13 @@ import {useWallet} from '@suiet/wallet-kit';
 import {Transaction} from "@mysten/sui/transactions";
 import { useEffect } from 'react';
 
+// cargo install --locked --git https://github.com/MystenLabs/sui.git --branch devnet sui
+
+// cd contracts/suimint
+// sui move build
+
+//sui client publish --gas-budget 100000000
+
 function App() {
 
   const wallet = useWallet()
