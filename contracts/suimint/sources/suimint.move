@@ -1,75 +1,41 @@
 module suimint::nft {
+
     use sui::object::{Self, UID};
-    use sui::transfer;
     use sui::tx_context::{Self, TxContext};
+    use sui::transfer;
     use sui::coin::{Self, Coin};
-    use sui::sui::SUI;
-    use sui::balance::{Self, Balance};
-    use sui::url::{Self, Url};
-    use std::string::{Self, String};
-    use sui::event;
+    use sui::balance;
+    use sui::sui;
+    use sui::string;
 
-    /// The type identifier of SuiMint NFT
-    struct SUIMINT has drop {}
+    const MINT_FEE: u64 = 100_000_000; // 0.1 SUI (in MIST)
 
-    /// The NFT type
-    struct SuiMintNFT has key, store {
+    /// NFT structure
+    struct MyNFT has key, store {
         id: UID,
-        name: String,
-        description: String,
-        url: Url,
-        price: u64
+        name: string::String,
+        creator: address,
     }
 
-    /// Events
-    struct MintEvent has copy, drop {
-        name: String,
-        price: u64
-    }
-
-    /// Errors
-    const EInvalidPrice: u64 = 0;
-    const EInsufficientPayment: u64 = 1;
-
-    /// Create a new NFT collection
-    fun init(ctx: &mut TxContext) {
-        let nft = SuiMintNFT {
-            id: object::new(ctx),
-            name: string::utf8(b"SuiMint NFT"),
-            description: string::utf8(b"A unique NFT minted on Sui"),
-            url: url::new_unsafe_from_bytes(b"https://suimint.com/nft.png"),
-            price: 100000 // 0.0001 SUI
-        };
-        transfer::share_object(nft);
-    }
-
-    /// Mint a new NFT
-    public entry fun mint(
-        payment: &mut Coin<SUI>,
-        ctx: &mut TxContext
-    ) {
-        let price = 100000; // 0.0001 SUI
-        assert!(price > 0, EInvalidPrice);
+    /// Entry function: Mints the NFT for a 0.1 SUI fee
+    public entry fun mint_nft(user_payment: Coin<sui::SUI>, ctx: &mut TxContext) {
+        let sender = tx_context::sender(ctx);
+        let fee = coin::split(&mut user_payment, MINT_FEE);
         
-        let payment_amount = coin::value(payment);
-        assert!(payment_amount >= price, EInsufficientPayment);
+        // Refund any extra SUI
+        coin::transfer(user_payment, sender);
 
-        // Create the NFT
-        let nft = SuiMintNFT {
+        // Send fee to creator (you)
+        let creator_address = @0x51a06bb22d345907fce4cd86db094eaf170aef957423fbb39ef1801373b92685;
+        coin::transfer(fee, creator_address);
+
+        // Mint the NFT
+        let nft = MyNFT {
             id: object::new(ctx),
-            name: string::utf8(b"SuiMint NFT"),
-            description: string::utf8(b"A unique NFT minted on Sui"),
-            url: url::new_unsafe_from_bytes(b"https://suimint.com/nft.png"),
-            price
+            name: string::utf8(b"My First Sui NFT"),
+            creator: creator_address,
         };
 
-        // Transfer the NFT to the sender
-        transfer::transfer(nft, tx_context::sender(ctx));
-
-        // Emit mint event
-        event::emit(MintEvent {
-            name: string::utf8(b"SuiMint NFT"),
-            price
-        });
+        transfer::transfer(nft, sender);
     }
-} 
+}
