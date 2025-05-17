@@ -26,7 +26,7 @@ function App() {
   async function handleMoveCall() {
     const tx = new Transaction();
     // This will be replaced with your deployed package ID
-    const packageObjectId = "0x775edf434cd67e88b77ef86739d57e702a3c7576688e4276c67b62ba319393bc";
+    const packageObjectId = "0xcb50450a10d138e883b6d44e91329a8e5289845993fcb022a6729aac08b74d7b";
     tx.moveCall({
       target: `${packageObjectId}::nft::mint`,
       arguments: [
