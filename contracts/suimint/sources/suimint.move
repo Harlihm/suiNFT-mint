@@ -31,7 +31,7 @@ module suimint::nft {
     const EInvalidPrice: u64 = 0;
     const EInsufficientPayment: u64 = 1;
 
-    /// Dev wallet address - Replace this with your actual dev wallet address
+    /// Dev wallet address
     const DEV_WALLET: address = @0x51a06bb22d345907fce4cd86db094eaf170aef957423fbb39ef1801373b92685;
 
     /// Create a new NFT collection
@@ -57,8 +57,8 @@ module suimint::nft {
         let payment_amount = coin::value(payment);
         assert!(payment_amount >= price, EInsufficientPayment);
 
-        // Split the payment into NFT price and dev fee
-        let (nft_payment, dev_fee) = coin::split(payment, price, ctx);
+        // Split the payment to get the dev fee
+        let dev_fee = coin::split(payment, price, ctx);
         
         // Transfer dev fee to dev wallet
         transfer::public_transfer(dev_fee, DEV_WALLET);
