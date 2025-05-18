@@ -24,26 +24,50 @@ function App() {
   }, [wallet.connected, wallet.name, wallet.account?.address, wallet.account?.publicKey])
 
   async function handleMoveCall() {
-    const tx = new Transaction();
-    const packageObjectId = "0xcb50450a10d138e883b6d44e91329a8e5289845993fcb022a6729aac08b74d7b";
-    
-    // Get the SUI coin to use for payment
-    const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(100000)]);
-    
-    tx.moveCall({
-      target: `${packageObjectId}::nft::mint`,
-      arguments: [
-        coin // Pass the coin as payment
-      ],
-    });
+    try {
+      const tx = new Transaction();
+      const packageObjectId = "0xcb50450a10d138e883b6d44e91329a8e5289845993fcb022a6729aac08b74d7b";
+      
+      // Create a new coin with the exact amount needed
+      const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(100000)]);
+      
+      // Create the move call with proper type arguments
+      tx.moveCall({
+        target: `${packageObjectId}::nft::mint`,
+        typeArguments: ['0x2::sui::SUI'],
+        arguments: [
+          tx.object(coin)
+        ]
+      });
 
-    await wallet.signAndExecuteTransaction({
-      transaction: tx,
-      options: {
-        showEffects: true,
-        showEvents: true
+      // Set a fixed gas budget
+      const gasBudget = 10000000;
+
+      // First request approval
+      const approval = await wallet.signTransaction({
+        transaction: tx,
+        options: {
+          showEffects: true,
+          showEvents: true,
+          gasBudget
+        }
+      });
+
+      if (approval) {
+        // If approved, execute the transaction
+        const result = await wallet.executeTransaction({
+          transaction: tx,
+          options: {
+            showEffects: true,
+            showEvents: true,
+            gasBudget
+          }
+        });
+        console.log('Transaction result:', result);
       }
-    });
+    } catch (error) {
+      console.error('Transaction error:', error);
+    }
   }
 
   async function handleSignMessage() {
