@@ -1,90 +1,68 @@
-// import { useState } from 'react'
-import './App.css'
-import {ConnectButton} from '@suiet/wallet-kit';
-import {useWallet} from '@suiet/wallet-kit';
-import {Transaction} from "@mysten/sui/transactions";
+import './App.css';
+import { ConnectButton } from '@suiet/wallet-kit';
+import { useWallet } from '@suiet/wallet-kit';
+import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useEffect } from 'react';
 
-// cargo install --locked --git https://github.com/MystenLabs/sui.git --branch devnet sui
-
-// cd contracts/suimint
-// sui move build
-
-//sui client publish --gas-budget tur
-
 function App() {
-
-  const wallet = useWallet()
+  const wallet = useWallet();
 
   useEffect(() => {
     if (!wallet.connected) return;
-    console.log('connected wallet name: ', wallet.name)
-    console.log('account address: ', wallet.account?.address)
-    console.log('account publicKey: ', wallet.account?.publicKey)
-  }, [wallet.connected, wallet.name, wallet.account?.address, wallet.account?.publicKey])
+    console.log('Connected wallet name:', wallet.name);
+    console.log('Account address:', wallet.account?.address);
+    console.log('Account publicKey:', wallet.account?.publicKey);
+  }, [wallet.connected, wallet.name, wallet.account?.address, wallet.account?.publicKey]);
 
   async function handleMoveCall() {
     try {
-      const tx = new Transaction();
+      const tx = new TransactionBlock();
       const packageObjectId = "0xcb50450a10d138e883b6d44e91329a8e5289845993fcb022a6729aac08b74d7b";
-      
-      // Create a new coin with the exact amount needed
-      const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(100000)]);
-      
-      // Create the move call with proper type arguments
+
+      // Split 100_000 micro-SUI from the gas coin to use as payment
+      const [payment] = tx.splitCoins(tx.gas, [tx.pure.u64(100000)]);
+
+      // Call the mint function
       tx.moveCall({
         target: `${packageObjectId}::nft::mint`,
-        typeArguments: ['0x2::sui::SUI'],
-        arguments: [
-          tx.object(coin)
-        ]
+        arguments: [payment],
       });
 
-      // Set a fixed gas budget
-      const gasBudget = 10000000;
-
-      // First request approval
-      const approval = await wallet.signTransaction({
-        transaction: tx,
+      // Execute transaction
+      const result = await wallet.signAndExecuteTransactionBlock({
+        transactionBlock: tx,
         options: {
           showEffects: true,
           showEvents: true,
-          gasBudget
-        }
+        },
       });
 
-      if (approval) {
-        // If approved, execute the transaction
-        const result = await wallet.executeTransaction({
-          transaction: tx,
-          options: {
-            showEffects: true,
-            showEvents: true,
-            gasBudget
-          }
-        });
-        console.log('Transaction result:', result);
-      }
+      console.log('Transaction result:', result);
     } catch (error) {
       console.error('Transaction error:', error);
     }
   }
 
   async function handleSignMessage() {
-    await wallet.signPersonalMessage({
-      message: new TextEncoder().encode("Hello World"),
-    });
+    try {
+      const result = await wallet.signPersonalMessage({
+        message: new TextEncoder().encode("Hello World"),
+      });
+      console.log('Signed message:', result);
+    } catch (error) {
+      console.error('Sign message error:', error);
+    }
   }
 
   return (
     <>
-     <header>
-        <ConnectButton/>
+      <header>
+        <ConnectButton />
         <button onClick={handleMoveCall}>Mint NFT</button>
         <button onClick={handleSignMessage}>Sign Message</button>
       </header>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
